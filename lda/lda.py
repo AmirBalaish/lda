@@ -14,7 +14,7 @@ logger = logging.getLogger('lda')
 
 PY2 = sys.version_info[0] == 2
 if PY2:
-    range = xrange
+    range = range
 
 
 class LDA:
@@ -122,7 +122,7 @@ class LDA:
         self : object
             Returns the instance itself.
         """
-        self._fit(X)
+        self._fit(X, y)        
         return self
 
     def fit_transform(self, X, y=None):
@@ -144,7 +144,7 @@ class LDA:
             # in case user passes a (non-sparse) array of shape (n_features,)
             # turn it into an array of shape (1, n_features)
             X = np.atleast_2d(X)
-        self._fit(X)
+        self._fit(X, y)
         return self.doc_topic_
 
     def transform(self, X, max_iter=20, tol=1e-16):
@@ -181,6 +181,7 @@ class LDA:
         for d in np.unique(DS):
             doc_topic[d] = self._transform_single(WS[DS == d], max_iter, tol)
         return doc_topic
+
 
     def _transform_single(self, doc, max_iter, tol):
         """Transform a single document according to the previously fit model
@@ -220,7 +221,7 @@ class LDA:
         assert theta_doc.shape == (self.n_topics,)
         return theta_doc
 
-    def _fit(self, X):
+    def _fit(self, X, y):
         """Fit the model to the data X
 
         Parameters
@@ -240,7 +241,7 @@ class LDA:
                 logger.info("<{}> log likelihood: {:.0f}".format(it, ll))
                 # keep track of loglikelihoods for monitoring convergence
                 self.loglikelihoods_.append(ll)
-            self._sample_topics(rands)
+            self._sample_topics(rands, y)
         ll = self.loglikelihood()
         logger.info("<{}> log likelihood: {:.0f}".format(self.n_iter - 1, ll))
         # note: numpy /= is integer division
@@ -294,10 +295,10 @@ class LDA:
         nd = np.sum(ndz, axis=1).astype(np.intc)
         return lda._lda._loglikelihood(nzw, ndz, nz, nd, alpha, eta)
 
-    def _sample_topics(self, rands):
+    def _sample_topics(self, rands, y):
         """Samples all topic assignments. Called once per iteration."""
         n_topics, vocab_size = self.nzw_.shape
         alpha = np.repeat(self.alpha, n_topics).astype(np.float64)
         eta = np.repeat(self.eta, vocab_size).astype(np.float64)
         lda._lda._sample_topics(self.WS, self.DS, self.ZS, self.nzw_, self.ndz_, self.nz_,
-                                alpha, eta, rands)
+                                alpha, eta, rands, y)

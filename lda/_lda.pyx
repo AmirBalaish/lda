@@ -38,7 +38,7 @@ cdef int searchsorted(double* arr, int length, double value) nogil:
 
 
 def _sample_topics(int[:] WS, int[:] DS, int[:] ZS, int[:, :] nzw, int[:, :] ndz, int[:] nz,
-                   double[:] alpha, double[:] eta, double[:] rands):
+                   double[:] alpha, double[:] eta, double[:] rands, int[:,:] y):
     cdef int i, k, w, d, z, z_new
     cdef double r, dist_cum
     cdef int N = WS.shape[0]
@@ -64,7 +64,8 @@ def _sample_topics(int[:] WS, int[:] DS, int[:] ZS, int[:, :] nzw, int[:, :] ndz
             dist_cum = 0
             for k in range(n_topics):
                 # eta is a double so cdivision yields a double
-                dist_cum += (nzw[k, w] + eta[w]) / (nz[k] + eta_sum) * (ndz[d, k] + alpha[k])
+                if y[i,k]==1:
+                    dist_cum += (nzw[k, w] + eta[w]) / (nz[k] + eta_sum) * (ndz[d, k] + alpha[k])
                 dist_sum[k] = dist_cum
 
             r = rands[i % n_rand] * dist_cum  # dist_cum == dist_sum[-1]
