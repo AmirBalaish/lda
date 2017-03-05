@@ -9,6 +9,7 @@ import numpy as np
 
 import lda._lda
 import lda.utils
+from sklearn import preprocessing
 
 logger = logging.getLogger('lda')
 
@@ -233,6 +234,7 @@ class LDA:
         random_state = lda.utils.check_random_state(self.random_state)
         rands = self._rands.copy()
         self._initialize(X)
+        y = self._labels_to_vectors(y)
         for it in range(self.n_iter):
             # FIXME: using numpy.roll with a random shift might be faster
             random_state.shuffle(rands)
@@ -300,5 +302,13 @@ class LDA:
         n_topics, vocab_size = self.nzw_.shape
         alpha = np.repeat(self.alpha, n_topics).astype(np.float64)
         eta = np.repeat(self.eta, vocab_size).astype(np.float64)
-        lda._lda._sample_topics(self.WS, self.DS, self.ZS, self.nzw_, self.ndz_, self.nz_,
-                                alpha, eta, rands, y)
+        if y is None:
+            lda._lda._sample_topics_lda(self.WS, self.DS, self.ZS, self.nzw_, self.ndz_, self.nz_,
+                        alpha, eta, rands)
+        else:
+            lda._lda._sample_topics_llda(self.WS, self.DS, self.ZS, self.nzw_, self.ndz_, self.nz_,
+                                    alpha, eta, rands, y)
+        
+    def _labels_to_vectors(self, labels_list):
+        lb = preprocessing.LabelBinarizer()
+        return lb.fit_transform(labels_list).astype(np.float)
