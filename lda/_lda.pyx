@@ -120,7 +120,6 @@ def _sample_topics_lda(int[:] WS, int[:] DS, int[:] ZS, int[:, :] nzw, int[:, :]
     if dist_sum is NULL:
         raise MemoryError("Could not allocate memory during sampling.")
     
-    
     with nogil:
         for i in range(eta.shape[0]):
             eta_sum += eta[i]
@@ -182,3 +181,8 @@ cpdef double _loglikelihood(int[:, :] nzw, int[:, :] ndz, int[:] nz, int[:] nd, 
                 if ndz[d, k] > 0:
                     ll += lgamma(alpha + ndz[d, k]) - lgamma_alpha
         return ll
+
+
+
+
+

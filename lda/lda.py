@@ -234,7 +234,8 @@ class LDA:
         random_state = lda.utils.check_random_state(self.random_state)
         rands = self._rands.copy()
         self._initialize(X)
-        y = self._labels_to_vectors(y)
+        if y is not None:
+            y = self._labels_to_vectors(y)
         for it in range(self.n_iter):
             # FIXME: using numpy.roll with a random shift might be faster
             random_state.shuffle(rands)
