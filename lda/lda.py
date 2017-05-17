@@ -311,5 +311,12 @@ class LDA:
                                     alpha, eta, rands, y)
         
     def _labels_to_vectors(self, labels_list):
-        lb = preprocessing.LabelBinarizer()
-        return lb.fit_transform(labels_list).astype(np.float)
+        
+        labels_set = list(set(labels_list))
+        if len(list(set(labels_list)))==2:
+             labels_set.append("_")
+             X = preprocessing.label_binarize(labels_list, labels_set).astype(np.float)
+             return X[:,:-1]
+        else:
+            lb = preprocessing.LabelBinarizer()
+            return lb.fit_transform(labels_list).astype(np.float)
